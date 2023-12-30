@@ -6,7 +6,7 @@ class PhysicsEntity:
         self.type = entity_type
         self.position = list(pos)
         self.size = size
-        self.velocity = [0]
+        self.velocity = [0, 0]
 
     def update(self, movement = (0,0)):
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
