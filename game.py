@@ -19,6 +19,8 @@ class Game:
 
         self.img_pos = [160, 260]
         self.movement = [False, False]
+
+        self.collision_area = pygame.Rect(50, 50, 300, 50)
     
     def run(self):
         # Main loop
@@ -28,6 +30,12 @@ class Game:
             # Make cloud move. And convert bullians(True(1)/False(0)) to int
             self.img_pos[1] += (self.movement[1] - self.movement[0]) * 5
             self.SCREEN.blit(self.img, self.img_pos)
+
+            img_r = pygame.Rect(self.img_pos[0], self.img_pos[1], self.img.get_width(), self.img.get_height())
+            if img_r.colliderect(self.collision_area):
+                pygame.draw.rect(self.SCREEN, (0, 100, 255), self.collision_area)
+            else:
+                pygame.draw.rect(self.SCREEN, (0, 50, 155), self.collision_area)
 
             # Events
             for event in pygame.event.get():
