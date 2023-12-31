@@ -33,8 +33,6 @@ class TIlemap:
                 rects.append(pygame.Rect(tile['position'][0] * self.tile_size, tile['position'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
 
-
-
     def render(self, surface, offset = (0, 0)):
         # Firstly decoration
         for tile in self. offgrid_tiles:

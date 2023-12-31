@@ -4,6 +4,7 @@ import pygame
 from scriptis.entities import PhysicsEntity
 from scriptis. tilemap import TIlemap, TILE_SIZE
 from scriptis.utils import load_image, load_images
+from scriptis.clouds import Clouds, COUNT_OF_CLOUDS
 
 class Game:
     def __init__(self):
@@ -25,17 +26,20 @@ class Game:
         self.assets = { 
             'decor' : load_images('tiles/decor'),
             'grass' : load_images('tiles/grass'),
-            'large_decor' : load_images('tiles/large_decor'),\
+            'large_decor' : load_images('tiles/large_decor'),
             'spawners' : load_images('tiles/spawners'),
             'stone' : load_images('tiles/stone'),
             'player': load_image('entities/player.png'),
-            'background' : load_image('background.png')
+            'background' : load_image('background.png'),
+            'clouds' : load_images('clouds'),
         }
 
         # Useage on class PhysicsEntity 
         self.player = PhysicsEntity(self, 'player', (100, 50), (8, 15)) 
         # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
+        # Useage on class clouds
+        self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
         #Camera scrolling
         self.scroll = [0, 0]
     
@@ -49,6 +53,10 @@ class Game:
             self.scroll[1] += ( self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
             # Executing the float in scroll
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+
+            # Render clouds
+            self.clouds.update()
+            self.clouds.render(self.display, offset = render_scroll)
 
             # Update and render part
             self.tilemap.render(self.display, offset = render_scroll)
