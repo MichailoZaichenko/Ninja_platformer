@@ -29,22 +29,31 @@ class Game:
             'spawners' : load_images('tiles/spawners'),
             'stone' : load_images('tiles/stone'),
             'player': load_image('entities/player.png'),
+            'background' : load_image('background.png')
         }
 
-        # self.collision_area = pygame.Rect(50, 50, 300, 50)
-        # useage on class PhysicsEntity 
+        # Useage on class PhysicsEntity 
         self.player = PhysicsEntity(self, 'player', (100, 50), (8, 15)) 
-        # useage on class Tilemap
+        # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
+        #Camera scrolling
+        self.scroll = [0, 0]
+    
     def run(self):
         # Main loop
         while True:
-            self.display.fill((14, 143, 134))
+            self.display.blit(self.assets['background'], (0, 0))
+            # Finding where cam is on X
+            self.scroll[0] += ( self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
+            # Finding where cam is on Y
+            self.scroll[1] += ( self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
+            # Executing the float in scroll
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
-            self.tilemap.render(self.display)
-            
+            # Update and render part
+            self.tilemap.render(self.display, offset = render_scroll)
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display)
+            self.player.render(self.display, offset = render_scroll)
 
             # Events
             for event in pygame.event.get():
@@ -65,9 +74,10 @@ class Game:
                         self.movement[0] = False
                     if event.key == pygame.K_RIGHT or event.key == ord('d'):
                         self.movement[1] = False
-
+            # Resize the display
             self.SCREEN.blit(pygame.transform.scale(self.display, self.SCREEN.get_size()), (0, 0))
             pygame.display.update()
+            # Setting the FPS limits
             self.CLOCK.tick(self.FPS)
 
 Game().run()
