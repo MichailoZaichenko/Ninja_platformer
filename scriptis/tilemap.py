@@ -13,8 +13,9 @@ class TIlemap:
         self.offgrid_tiles = []
         # where to draw
         for i in range(10):
+                # Positon     X         Y
             self.tilemap[str(7 + i) + ';6'] = {'type': 'grass', 'variant': 1, 'position': (7 + i, 6)}
-            self.tilemap[str(3 + i) + ';10'] = {'type': 'grass', 'variant': 1, 'position': (3 + i, 10)}
+            self.tilemap[str(6 + i) + ';10'] = {'type': 'grass', 'variant': 1, 'position': (6 + i, 10)}
             self.tilemap['10;' + str(5 + i)] = {'type': 'stone', 'variant': 1, 'position': (10, 5 + i)}
 
     def tiles_around(self, position):
@@ -34,10 +35,15 @@ class TIlemap:
         return rects
 
     def render(self, surface, offset = (0, 0)):
+    # Make rendering optimisations
         # Firstly decoration
         for tile in self. offgrid_tiles:
             surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['position'][0] - offset[0], tile['position'][1] - offset[1]))
-        # Secondary physic objects
-        for location in self.tilemap:
-            tile = self.tilemap[location]
-            surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['position'][0] * self.tile_size - offset[0], tile['position'][1] * self.tile_size - offset[1]))
+
+        # Secondary decoration
+        for x in range(offset[0] // self.tile_size, (offset[0] + surface.get_width()) // self.tile_size + 1):
+            for y in range(offset[1] // self.tile_size, (offset[1] + surface.get_height()) // self.tile_size + 1):
+                location = str(x) + ';' + str(y)
+                if location in self.tilemap:
+                    tile = self.tilemap[location]
+                    surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['position'][0] * self.tile_size - offset[0], tile['position'][1] * self.tile_size - offset[1]))
