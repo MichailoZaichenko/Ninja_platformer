@@ -1,9 +1,9 @@
 import sys
 import pygame
 # import files
-from scriptis.entities import PhysicsEntity
+from scriptis.entities import PhysicsEntity, Player
 from scriptis. tilemap import TIlemap, TILE_SIZE
-from scriptis.utils import load_image, load_images
+from scriptis.utils import load_image, load_images, Animation
 from scriptis.clouds import Clouds, COUNT_OF_CLOUDS
 
 class Game:
@@ -32,10 +32,15 @@ class Game:
             'player': load_image('entities/player.png'),
             'background' : load_image('background.png'),
             'clouds' : load_images('clouds'),
+            'player/idle' : Animation(load_images('entities/player/idle'), img_duration = 6),
+            'player/run' : Animation(load_images('entities/player/run')),
+            'player/jump' : Animation(load_images('entities/player/jump')),
+            'player/slide' : Animation(load_images('entities/player/slide')),
+            'player/wall_slide' : Animation(load_images('entities/player/wall_slide')),
         }
 
         # Useage on class PhysicsEntity 
-        self.player = PhysicsEntity(self, 'player', (100, 50), (8, 15)) 
+        self.player = Player(self, (100, 50), (8, 15)) 
         # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
         # Useage on class clouds
