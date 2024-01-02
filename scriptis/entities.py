@@ -28,7 +28,6 @@ class PhysicsEntity:
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
 
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
-
         # X
         self.position[0] += frame_movement[0]
         entity_rect = self.rect()
@@ -53,10 +52,10 @@ class PhysicsEntity:
                     entity_rect.top = rect.bottom
                     self.collisions['up'] = True
                 self.position[1] = entity_rect.y
-
+        # Flipping the img 
         if movement[0] > 0:
             self.flip = False
-        if movement[1] < 0:
+        if movement[0] < 0:
             self.flip = True
 
         self.velocity[1] = min(5, self.velocity[1] + 0.1)
@@ -81,7 +80,6 @@ class Player(PhysicsEntity):
         self.air_time += 1
         if self.collisions['down']:
             self.air_time = 0
-
         if self.air_time > 4:
             self.set_action('jump')
         elif movement[0] != 0:
