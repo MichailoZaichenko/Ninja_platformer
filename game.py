@@ -38,13 +38,14 @@ class Game:
             'player/slide' : Animation(load_images('entities/player/slide')),
             'player/wall_slide' : Animation(load_images('entities/player/wall_slide')),
         }
-
+        
+        # Useage on class clouds
+        self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
         # Useage on class PhysicsEntity 
         self.player = Player(self, (100, 50), (8, 15)) 
         # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
-        # Useage on class clouds
-        self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
+        self.tilemap.load('map.json')
         #Camera scrolling
         self.scroll = [0, 0]
     
