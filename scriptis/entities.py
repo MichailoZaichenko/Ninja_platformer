@@ -5,10 +5,10 @@ from scriptis.particle import Particlepos as Particle
 from scriptis.spark import Spark
 
 class PhysicsEntity:
-    def __init__(self, game, entity_type, position, size):
+    def __init__(self, game, entity_type, pos, size):
         self.game = game
         self.type = entity_type
-        self.position = list(position)
+        self.pos = list(pos)
         self.size = size
         self.velocity = [0, 0]
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
@@ -21,7 +21,7 @@ class PhysicsEntity:
         self.last_movement = [0, 0]
 
     def rect(self):
-        return pygame.Rect(self.position[0], self.position[1], self.size[0], self.size[1])
+        return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
 
     def set_action(self, action):
         if action != self.action:
@@ -33,9 +33,9 @@ class PhysicsEntity:
 
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
         # X
-        self.position[0] += frame_movement[0]
+        self.pos[0] += frame_movement[0]
         entity_rect = self.rect()
-        for rect in tilemap.physics_rects_around(self.position):
+        for rect in tilemap.physics_rects_around(self.pos):
             if entity_rect.colliderect(rect):
                 if frame_movement[0] > 0:
                     entity_rect.right = rect.left
@@ -43,11 +43,11 @@ class PhysicsEntity:
                 if frame_movement[0] < 0:
                     entity_rect.left = rect.right
                     self.collisions['left'] = True
-                self.position[0] = entity_rect.x
+                self.pos[0] = entity_rect.x
         # Y
-        self.position[1] += frame_movement[1]
+        self.pos[1] += frame_movement[1]
         entity_rect = self.rect()
-        for rect in tilemap.physics_rects_around(self.position):
+        for rect in tilemap.physics_rects_around(self.pos):
             if entity_rect.colliderect(rect):
                 if frame_movement[1] > 0:
                     entity_rect.bottom = rect.top
@@ -55,7 +55,7 @@ class PhysicsEntity:
                 if frame_movement[1] < 0:
                     entity_rect.top = rect.bottom
                     self.collisions['up'] = True
-                self.position[1] = entity_rect.y
+                self.pos[1] = entity_rect.y
         # Flipping the img 
         if movement[0] > 0:
             self.flip = False
@@ -72,18 +72,18 @@ class PhysicsEntity:
         self.animation.update()
     
     def render(self, surface, offset = (0, 0)):
-        # surface.blit(self.game.assets['player'], (self.position[0]- offset[0], self.position[1] - offset[1]))
-        surface.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.position[0] - offset[0] + self.animation_offset[0], self.position[1] - offset[1] + self.animation_offset[1]))
+        # surface.blit(self.game.assets['player'], (self.pos[0]- offset[0], self.pos[1] - offset[1]))
+        surface.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.animation_offset[0], self.pos[1] - offset[1] + self.animation_offset[1]))
 
 class Enemy(PhysicsEntity):
-    def __init__(self, game, position, size):
-        super().__init__(game, 'enemy', position, size)
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'enemy', pos, size)
         
         self.walking = 0
         
     def update(self, tilemap, movement=(0, 0)):
         if self.walking:
-            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.position[1] + 23)):
+            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23)):
                 if (self.collisions['right'] or self.collisions['left']):
                     self.flip = not self.flip
                 else:
@@ -92,7 +92,7 @@ class Enemy(PhysicsEntity):
                 self.flip = not self.flip
             self.walking = max(0, self.walking - 1)
             if not self.walking:
-                dis = (self.game.player.position[0] - self.position[0], self.game.player.position[1] - self.position[1])
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
                 if (abs(dis[1]) < 16):
                     if (self.flip and dis[0] < 0):
                         self.game.sfx['shoot'].play()
@@ -136,8 +136,8 @@ class Enemy(PhysicsEntity):
             surface.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
 
 class Player(PhysicsEntity):
-    def __init__(self, game, position, size):
-        super().__init__(game, 'player', position, size)
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'player', pos, size)
         self.air_time = 0
         self.jumps = 1
         self.wall_slide = False
@@ -148,7 +148,7 @@ class Player(PhysicsEntity):
         
         self.air_time += 1
         
-        if self.air_time > 120:
+        if self.air_time > 240:
             if not self.game.dead:
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.dead += 1
@@ -205,13 +205,13 @@ class Player(PhysicsEntity):
         if self.wall_slide:
             if self.flip and self.last_movement[0] < 0:
                 self.velocity[0] = 3.5
-                self.velocity[1] = -2.5
+                self.velocity[1] = -2.8
                 self.air_time = 5
                 self.jumps = max(0, self.jumps - 1)
                 return True
             elif not self.flip and self.last_movement[0] > 0:
                 self.velocity[0] = -3.5
-                self.velocity[1] = -2.5
+                self.velocity[1] = -2.8
                 self.air_time = 5
                 self.jumps = max(0, self.jumps - 1)
                 return True
