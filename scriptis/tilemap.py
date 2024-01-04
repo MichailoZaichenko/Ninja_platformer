@@ -25,12 +25,6 @@ class TIlemap:
         self.tilemap = {}
         # Non-phiscs like decorations
         self.offgrid_tiles = []
-        # where to draw
-        # for i in range(10):
-        #         # Positon     X         Y
-        #     self.tilemap[str(7 + i) + ';6'] = {'type': 'grass', 'variant': 1, 'position': (7 + i, 6)}
-        #     self.tilemap[str(6 + i) + ';10'] = {'type': 'grass', 'variant': 1, 'position': (6 + i, 10)}
-        #     self.tilemap['10;' + str(5 + i)] = {'type': 'stone', 'variant': 1, 'position': (10, 5 + i)}
 
     def extract(self, id_pairs, keep=False):
         matches = []
@@ -40,15 +34,15 @@ class TIlemap:
                 if not keep:
                     self.offgrid_tiles.remove(tile)
                     
-        for loc in self.tilemap:
-            tile = self.tilemap[loc]
+        for location in self.tilemap:
+            tile = self.tilemap[location]
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
-                matches[-1]['posititon'] = matches[-1]['position'].copy()
+                matches[-1]['position'] = matches[-1]['position'].copy()
                 matches[-1]['position'][0] *= self.tile_size
                 matches[-1]['position'][1] *= self.tile_size
                 if not keep:
-                    del self.tilemap[loc]
+                    del self.tilemap[location]
         
         return matches
     
@@ -74,6 +68,12 @@ class TIlemap:
         self.tilemap = map_data['tilemap']
         self.tile_size = map_data['tile_size']
         self.offgrid_tiles = map_data['offgrid']
+    
+    def solid_check(self, position):
+        tile_location = str(int(position[0] // self.tile_size)) + ';' + str(int(position[1] // self.tile_size))
+        if tile_location in self.tilemap:
+            if self.tilemap[tile_location]['type'] in PHYSICS_TILES:
+                return self.tilemap[tile_location]
 
     def physics_rects_around(self, position):
         rects = []

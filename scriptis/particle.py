@@ -1,4 +1,4 @@
-class Particle:
+class Particlepos:
     def __init__(self, game, p_type, position, velocity=[0, 0], frame=0):
         self.game = game
         self.type = p_type
