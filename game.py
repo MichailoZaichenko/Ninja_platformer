@@ -1,10 +1,12 @@
 import sys
 import pygame
+import random
 # import files
 from scriptis.entities import PhysicsEntity, Player
 from scriptis. tilemap import TIlemap, TILE_SIZE
 from scriptis.utils import load_image, load_images, Animation
 from scriptis.clouds import Clouds, COUNT_OF_CLOUDS
+from scriptis.particle import Particle
 
 class Game:
     def __init__(self):
@@ -16,6 +18,9 @@ class Game:
         # Some constands
         SCREEN_WIDTH = 1280//2
         SCREEN_HIGHT = 960//2
+        PLAYER_BOX_WIDTH = 8
+        PLAYER_BOX_HIGHT = 15
+        PLAYER_SPAWN_POSITION = (100, 50)
         self.SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HIGHT))
         self.display = pygame.Surface((SCREEN_WIDTH//2, SCREEN_HIGHT//2)) 
         self.FPS = 60
@@ -37,15 +42,23 @@ class Game:
             'player/jump' : Animation(load_images('entities/player/jump')),
             'player/slide' : Animation(load_images('entities/player/slide')),
             'player/wall_slide' : Animation(load_images('entities/player/wall_slide')),
+            'particle/leaf': Animation(load_images('particles/leaf'), img_duration=20, loop=False),
         }
         
         # Useage on class clouds
         self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
         # Useage on class PhysicsEntity 
-        self.player = Player(self, (100, 50), (8, 15)) 
+        self.player = Player(self, PLAYER_SPAWN_POSITION, (PLAYER_BOX_WIDTH, PLAYER_BOX_HIGHT)) 
         # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
         self.tilemap.load('map.json')
+
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['position'][0],  4 + tree['position'][1], 23, 13))
+
+        self.particles = []
+
         #Camera scrolling
         self.scroll = [0, 0]
     
@@ -59,6 +72,11 @@ class Game:
             self.scroll[1] += ( self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
             # Executing the float in scroll
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            # spawning leafs
+            for rect in self.leaf_spawners:
+                if random.random() * 49999 < rect.width * rect.height:
+                    positon = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
+                    self.particles.append(Particle(self, 'leaf', positon, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
 
             # Render clouds
             self.clouds.update()
@@ -68,6 +86,12 @@ class Game:
             self.tilemap.render(self.display, offset = render_scroll)
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
             self.player.render(self.display, offset = render_scroll)
+
+            for particle in self.particles.copy():
+                kill = particle.update()
+                particle.render(self.display, offset = render_scroll)
+                if kill:
+                    self.particles.remove(particle)
 
             # Events
             for event in pygame.event.get():
