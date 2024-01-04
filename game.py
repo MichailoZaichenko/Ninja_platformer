@@ -1,4 +1,5 @@
 import sys
+import math
 import pygame
 import random
 # import files
@@ -75,8 +76,8 @@ class Game:
             # spawning leafs
             for rect in self.leaf_spawners:
                 if random.random() * 49999 < rect.width * rect.height:
-                    positon = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
-                    self.particles.append(Particle(self, 'leaf', positon, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
+                    position = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
+                    self.particles.append(Particle(self, 'leaf', position, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
 
             # Render clouds
             self.clouds.update()
@@ -90,6 +91,8 @@ class Game:
             for particle in self.particles.copy():
                 kill = particle.update()
                 particle.render(self.display, offset = render_scroll)
+                if particle.type == 'leaf':
+                    particle.position[0] += math.sin(particle.animation.frame * 0.035) * 0.3
                 if kill:
                     self.particles.remove(particle)
 
