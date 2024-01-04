@@ -15,6 +15,8 @@ SCREEN_WIDTH = 1280//2
 SCREEN_HIGHT = 960//2
 PLAYER_BOX_WIDTH = 8
 PLAYER_BOX_HIGHT = 15
+BLACK = (255, 255, 255)
+WHITE = (0,0,0)
 PLAYER_SPAWN_pos = (100, 50)
 class Game:
     def __init__(self):
@@ -24,9 +26,10 @@ class Game:
         pygame.display.set_caption("NINJA")
 
         # Some constands
-        
         self.SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HIGHT))
+        # Camera
         self.display = pygame.Surface((SCREEN_WIDTH//2, SCREEN_HIGHT//2), pygame.SRCALPHA) 
+        # Surface
         self.display_2 = pygame.Surface((SCREEN_WIDTH//2, SCREEN_HIGHT//2))
         self.FPS = 60
         self.CLOCK = pygame.time.Clock()
@@ -64,9 +67,9 @@ class Game:
         
         self.sfx['ambience'].set_volume(0.2)
         self.sfx['shoot'].set_volume(0.4)
-        self.sfx['hit'].set_volume(0.8)
+        self.sfx['hit'].set_volume(0.4)
         self.sfx['dash'].set_volume(0.3)
-        self.sfx['jump'].set_volume(0.7)
+        self.sfx['jump'].set_volume(0.4)
         
         # Useage on class clouds
         self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
@@ -105,14 +108,14 @@ class Game:
     
     def run(self):
         pygame.mixer.music.load('data/music.wav')
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.set_volume(0.3)
         pygame.mixer.music.play(-1)
 
         self.sfx['ambience'].play(-1)
         # Main loop
         while True:
             self.display.fill((0, 0, 0, 0))
-            self.display_2.blit(self.assets['background'], (0, 0))
+            self.display_2.blit(pygame.transform.scale2x(self.assets['background']), (0, 0))
             
             self.screenshake = max(0, self.screenshake - 1)
             
@@ -172,7 +175,7 @@ class Game:
                         self.sparks.append(Spark(projectile[0], random.random() - 0.5 + (math.pi if projectile[1] > 0 else 0), 2 + random.random()))
                 elif projectile[2] > 360:
                     self.projectiles.remove(projectile)
-                elif abs(self.player.dashing) < 50:
+                elif abs(self.player.dashing)< 50:
                     if self.player.rect().collidepoint(projectile[0]):
                         self.projectiles.remove(projectile)
                         self.dead += 1
@@ -219,7 +222,7 @@ class Game:
                     if event.key == pygame.K_DOWN or event.key == ord('s'):
                         self.player.velocity[1] = 3
                     if event.key == pygame.K_x:
-                        self.player.dash()
+                        self.player.mele_atack()
                     if event.key == pygame.K_SPACE:
                         self.player.dash()
                 if event.type == pygame.KEYUP:
@@ -230,8 +233,8 @@ class Game:
             # Resize the display
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
-                pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
-                transition_surf.set_colorkey((255, 255, 255))
+                pygame.draw.circle(transition_surf, BLACK, (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
+                transition_surf.set_colorkey(BLACK)
                 self.display.blit(transition_surf, (0, 0))
                 
             self.display_2.blit(self.display, (0, 0))

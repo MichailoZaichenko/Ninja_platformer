@@ -142,13 +142,14 @@ class Player(PhysicsEntity):
         self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
+        self.mele_atacking = 0
     
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
-        
+        TIME_FLYING_AFTER_WHAT_PLAYER_DIE = 240
         self.air_time += 1
         
-        if self.air_time > 240:
+        if self.air_time > TIME_FLYING_AFTER_WHAT_PLAYER_DIE:
             if not self.game.dead:
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.dead += 1
@@ -174,7 +175,7 @@ class Player(PhysicsEntity):
                 self.set_action('run')
             else:
                 self.set_action('idle')
-        
+        # Dash
         if abs(self.dashing) in {60, 50}:
             for i in range(20):
                 angle = random.random() * math.pi * 2
@@ -200,24 +201,30 @@ class Player(PhysicsEntity):
     def render(self, surface, offset=(0, 0)):
         if abs(self.dashing) <= 50:
             super().render(surface, offset=offset)
+        if abs(self.mele_atacking) <= 50:
+            super().render(surface, offset=offset)
             
     def jump(self):
+        X_VELOSITY_WALL_JUMP = 3
+        Y_VELOSITY_WALL_JUMP = -3
+        Y_VELOSITY_JUMP = -3.5
+
         if self.wall_slide:
             if self.flip and self.last_movement[0] < 0:
-                self.velocity[0] = 3.5
-                self.velocity[1] = -2.8
+                self.velocity[0] = X_VELOSITY_WALL_JUMP
+                self.velocity[1] = Y_VELOSITY_WALL_JUMP
                 self.air_time = 5
                 self.jumps = max(0, self.jumps - 1)
                 return True
             elif not self.flip and self.last_movement[0] > 0:
-                self.velocity[0] = -3.5
-                self.velocity[1] = -2.8
+                self.velocity[0] = -X_VELOSITY_WALL_JUMP
+                self.velocity[1] = Y_VELOSITY_WALL_JUMP
                 self.air_time = 5
                 self.jumps = max(0, self.jumps - 1)
                 return True
                 
         elif self.jumps:
-            self.velocity[1] = -3
+            self.velocity[1] = Y_VELOSITY_JUMP
             self.jumps -= 1
             self.air_time = 5
             return True
@@ -229,3 +236,12 @@ class Player(PhysicsEntity):
                 self.dashing = -60
             else:
                 self.dashing = 60
+    def mele_atack(self):
+        if not self.mele_atacking:
+            self.game.sfx['dash'].play()
+            if self.flip:
+                self.mele_atacking = -51
+            else:
+                self.mele_atacking = 51
+
+
