@@ -4,6 +4,8 @@ import pygame
 from scriptis. tilemap import TIlemap, TILE_SIZE
 from scriptis.utils import load_image, load_images, Animation
 RENDER_SCALE = 2.0
+X = 0
+Y = 1
 
 class Editor:
     def __init__(self):
@@ -57,10 +59,10 @@ class Editor:
             # Filling display with black
             self.display.fill((0,0,0))
                                 # right             left
-            self.scroll[0] += (self.movement[1] - self.movement[0]) * 2
+            self.scroll[X] += (self.movement[Y] - self.movement[X]) * 2
                                 # down              up
-            self.scroll[1] += (self.movement[3] - self.movement[2]) * 2
-            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            self.scroll[Y] += (self.movement[3] - self.movement[2]) * 2
+            render_scroll = (int(self.scroll[X]), int(self.scroll[Y]))
 
             self.tilemap.render(self.display, offset = render_scroll)
 
@@ -68,24 +70,24 @@ class Editor:
             current_tile_img.set_alpha(100)
             # Some pos verables
             mouse_pos = pygame.mouse.get_pos()
-            mouse_pos = (mouse_pos[0] / RENDER_SCALE, mouse_pos[1] / RENDER_SCALE)
-            tile_pos = (int((mouse_pos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mouse_pos[1] + self.scroll[1]) // self.tilemap.tile_size))
+            mouse_pos = (mouse_pos[X] / RENDER_SCALE, mouse_pos[Y] / RENDER_SCALE)
+            tile_pos = (int((mouse_pos[X] + self.scroll[X]) // self.tilemap.tile_size), int((mouse_pos[Y] + self.scroll[Y]) // self.tilemap.tile_size))
 
             if self.ongrid:
                 # Preview of tile placing
-                self.display.blit(current_tile_img, (tile_pos[0] * self.tilemap.tile_size - self.scroll[0], tile_pos[1] * self.tilemap.tile_size - self.scroll[1]))
+                self.display.blit(current_tile_img, (tile_pos[X] * self.tilemap.tile_size - self.scroll[X], tile_pos[Y] * self.tilemap.tile_size - self.scroll[Y]))
             else:
                 self.display.blit(current_tile_img, mouse_pos)
 
             if self.clicking and self.ongrid:
-                self.tilemap.tilemap[str(tile_pos[0]) + ';' + str(tile_pos[1])]  = {'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': tile_pos }
+                self.tilemap.tilemap[str(tile_pos[X]) + ';' + str(tile_pos[Y])]  = {'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': tile_pos }
             if self.right_clicking:
-                tile_location = str(tile_pos[0]) + ';' + str(tile_pos[1])
+                tile_location = str(tile_pos[X]) + ';' + str(tile_pos[Y])
                 if tile_location in self.tilemap.tilemap:
                     del self.tilemap.tilemap[tile_location]
                 for tile in self.tilemap.offgrid_tiles.copy():
                     tile_img = self.assets[tile['type']][tile['variant']]
-                    tile_r = pygame.Rect(tile['pos'][0] - self.scroll[0], tile['pos'][1] - self.scroll[1], tile_img.get_width(), tile_img.get_height())
+                    tile_r = pygame.Rect(tile['pos'][X] - self.scroll[X], tile['pos'][Y] - self.scroll[Y], tile_img.get_width(), tile_img.get_height())
                     if tile_r.collidepoint(mouse_pos):
                         self.tilemap.offgrid_tiles.remove(tile)
 
@@ -102,7 +104,7 @@ class Editor:
                     if event.button == 1:
                         self.clicking = True
                         if  not self.ongrid:
-                            self.tilemap.offgrid_tiles.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': (mouse_pos[0] + self.scroll[0], mouse_pos[1] + self.scroll[1])})
+                            self.tilemap.offgrid_tiles.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': (mouse_pos[X] + self.scroll[X], mouse_pos[Y] + self.scroll[Y])})
                     if event.button == 3:
                         self.right_clicking = True
                     if self.shift:
@@ -130,9 +132,9 @@ class Editor:
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == ord('a'):
-                        self.movement[0] = True
+                        self.movement[X] = True
                     if event.key == pygame.K_RIGHT or event.key == ord('d'):
-                        self.movement[1] = True
+                        self.movement[Y] = True
                     if event.key == pygame.K_UP or event.key == ord('w'):
                         self.movement[2] = True
                     if event.key == pygame.K_DOWN or event.key == ord('s'):
@@ -147,9 +149,9 @@ class Editor:
                         self.shift = True
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == ord('a'):
-                        self.movement[0] = False
+                        self.movement[X] = False
                     if event.key == pygame.K_RIGHT or event.key == ord('d'):
-                        self.movement[1] = False
+                        self.movement[Y] = False
                     if event.key == pygame.K_UP or event.key == ord('w'):
                         self.movement[2] = False
                     if event.key == pygame.K_DOWN or event.key == ord('s'):

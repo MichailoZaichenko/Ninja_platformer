@@ -1,3 +1,6 @@
+X = 0
+Y = 1
+
 class Particlepos:
     def __init__(self, game, p_type, pos, velocity=[0, 0], frame=0):
         self.game = game
@@ -12,8 +15,8 @@ class Particlepos:
         if self.animation.done:
             kill = True
         
-        self.pos[0] += self.velocity[0]
-        self.pos[1] += self.velocity[1]
+        self.pos[X] += self.velocity[X]
+        self.pos[Y] += self.velocity[Y]
         
         self.animation.update()
         
@@ -21,5 +24,5 @@ class Particlepos:
     
     def render(self, surf, offset=(0, 0)):
         img = self.animation.img()
-        surf.blit(img, (self.pos[0] - offset[0] - img.get_width() // 2, self.pos[1] - offset[1] - img.get_height() // 2))
+        surf.blit(img, (self.pos[X] - offset[X] - img.get_width() // 2, self.pos[Y] - offset[Y] - img.get_height() // 2))
     

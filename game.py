@@ -17,7 +17,9 @@ PLAYER_BOX_WIDTH = 8
 PLAYER_BOX_HIGHT = 15
 BLACK = (255, 255, 255)
 WHITE = (0,0,0)
-PLAYER_SPAWN_pos = (100, 50)
+PLAYER_SPAWN_POS = (100, 50)
+X = 0
+Y = 1
 class Game:
     def __init__(self):
         pygame.init()
@@ -44,8 +46,8 @@ class Game:
             'player': load_image('entities/player.png'),
             'background': load_image('background.png'),
             'clouds': load_images('clouds'),
-            'enemy/idle': Animation(load_images('entities/enemy/idle'), img_duration=6),
-            'enemy/run': Animation(load_images('entities/enemy/run'), img_duration=4),
+            'enemy/idle': Animation(load_images('entities/enemy/idle_kovriga'), img_duration=6),
+            'enemy/run': Animation(load_images('entities/enemy/run_kovriga'), img_duration=4),
             'player/idle': Animation(load_images('entities/player/idle'), img_duration=6),
             'player/run': Animation(load_images('entities/player/run'), img_duration=4),
             'player/jump': Animation(load_images('entities/player/jump')),
@@ -65,7 +67,7 @@ class Game:
             'ambience': pygame.mixer.Sound('data/sfx/ambience.wav'),
         }
         
-        self.sfx['ambience'].set_volume(0.2)
+        self.sfx['ambience'].set_volume(0.8)
         self.sfx['shoot'].set_volume(0.4)
         self.sfx['hit'].set_volume(0.4)
         self.sfx['dash'].set_volume(0.3)
@@ -74,7 +76,7 @@ class Game:
         # Useage on class clouds
         self.clouds = Clouds(self.assets['clouds'], count = COUNT_OF_CLOUDS)
         # Useage on class PhysicsEntity 
-        self.player = Player(self, PLAYER_SPAWN_pos, (PLAYER_BOX_WIDTH, PLAYER_BOX_HIGHT)) 
+        self.player = Player(self, PLAYER_SPAWN_POS, (PLAYER_BOX_WIDTH, PLAYER_BOX_HIGHT)) 
         # Useage on class Tilemap
         self.tilemap = TIlemap(self, TILE_SIZE)
         self.level = 0
@@ -87,7 +89,7 @@ class Game:
         
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
-            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0],  4 + tree['pos'][1], 23, 13))
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][X],  4 + tree['pos'][Y], 23, 13))
 
         self.enemies = []
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
@@ -115,7 +117,8 @@ class Game:
         # Main loop
         while True:
             self.display.fill((0, 0, 0, 0))
-            self.display_2.blit(pygame.transform.scale2x(self.assets['background']), (0, 0))
+            # self.display_2.blit(pygame.transform.scale2x(self.assets['background']), (0, 0))
+            self.display_2.blit(self.assets['background'], (0, 0))
             
             self.screenshake = max(0, self.screenshake - 1)
             
@@ -135,11 +138,11 @@ class Game:
                     self.load_level(self.level)
 
             # Finding where cam is on X
-            self.scroll[0] += ( self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
+            self.scroll[X] += ( self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[X]) / 30
             # Finding where cam is on Y
-            self.scroll[1] += ( self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
+            self.scroll[Y] += ( self.player.rect().centery - self.display.get_height() / 2 - self.scroll[Y]) / 30
             # Executing the float in scroll
-            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            render_scroll = (int(self.scroll[X]), int(self.scroll[Y]))
             # spawning leafs
             for rect in self.leaf_spawners:
                 if random.random() * 49999 < rect.width * rect.height:
@@ -160,23 +163,23 @@ class Game:
                     self.enemies.remove(enemy)
 
             if not self.dead:
-                self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+                self.player.update(self.tilemap, (self.movement[Y] - self.movement[X], 0))
                 self.player.render(self.display, offset=render_scroll)
             
             # [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
-                projectile[0][0] += projectile[1]
+                projectile[0][X] += projectile[Y]
                 projectile[2] += 1
                 img = self.assets['projectile']
-                self.display.blit(img, (projectile[0][0] - img.get_width() / 2 - render_scroll[0], projectile[0][1] - img.get_height() / 2 - render_scroll[1]))
-                if self.tilemap.solid_check(projectile[0]):
+                self.display.blit(img, (projectile[0][X] - img.get_width() / 2 - render_scroll[X], projectile[0][Y] - img.get_height() / 2 - render_scroll[Y]))
+                if self.tilemap.solid_check(projectile[X]):
                     self.projectiles.remove(projectile)
                     for i in range(4):
-                        self.sparks.append(Spark(projectile[0], random.random() - 0.5 + (math.pi if projectile[1] > 0 else 0), 2 + random.random()))
+                        self.sparks.append(Spark(projectile[X], random.random() - 0.5 + (math.pi if projectile[Y] > 0 else 0), 2 + random.random()))
                 elif projectile[2] > 360:
                     self.projectiles.remove(projectile)
                 elif abs(self.player.dashing)< 50:
-                    if self.player.rect().collidepoint(projectile[0]):
+                    if self.player.rect().collidepoint(projectile[X]):
                         self.projectiles.remove(projectile)
                         self.dead += 1
                         self.sfx['hit'].play()
@@ -202,7 +205,7 @@ class Game:
                 kill = particle.update()
                 particle.render(self.display, offset = render_scroll)
                 if particle.type == 'leaf':
-                    particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3
+                    particle.pos[X] += math.sin(particle.animation.frame * 0.035) * 0.3
                 if kill:
                     self.particles.remove(particle)
 
@@ -213,23 +216,23 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == ord('a'):
-                        self.movement[0] = True
+                        self.movement[X] = True
                     if event.key == pygame.K_RIGHT or event.key == ord('d'):
-                        self.movement[1] = True
+                        self.movement[Y] = True
                     if event.key == pygame.K_UP or event.key == ord('w'):
                        if self.player.jump():
                             self.sfx['jump'].play()
                     if event.key == pygame.K_DOWN or event.key == ord('s'):
-                        self.player.velocity[1] = 3
+                        self.player.velocity[Y] = 3
                     if event.key == pygame.K_x:
                         self.player.mele_atack()
                     if event.key == pygame.K_SPACE:
                         self.player.dash()
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == ord('a'):
-                        self.movement[0] = False
+                        self.movement[X] = False
                     if event.key == pygame.K_RIGHT or event.key == ord('d'):
-                        self.movement[1] = False
+                        self.movement[Y] = False
             # Resize the display
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())

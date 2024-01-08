@@ -4,6 +4,8 @@ TILE_SIZE = 16
 NEIGHBOR_OFFSETS = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
 PHYSICS_TILES = {'grass', 'stone'}
 AUTOTILE_TYPES = {'grass', 'stone'}
+X = 0
+Y = 1
 
 AUTOTILE_MAP = {
     tuple(sorted([(1, 0), (0, 1)])): 0,
@@ -39,8 +41,8 @@ class TIlemap:
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
                 matches[-1]['pos'] = matches[-1]['pos'].copy()
-                matches[-1]['pos'][0] *= self.tile_size
-                matches[-1]['pos'][1] *= self.tile_size
+                matches[-1]['pos'][X] *= self.tile_size
+                matches[-1]['pos'][Y] *= self.tile_size
                 if not keep:
                     del self.tilemap[location]
         
@@ -48,9 +50,9 @@ class TIlemap:
     
     def tiles_around(self, pos):
         tiles = []
-        tile_location = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
+        tile_location = (int(pos[X] // self.tile_size), int(pos[Y] // self.tile_size))
         for offset in NEIGHBOR_OFFSETS:
-            check_location = str(tile_location[0] + offset[0]) + ';' + str(tile_location[1] + offset[1])
+            check_location = str(tile_location[X] + offset[X]) + ';' + str(tile_location[Y] + offset[Y])
             if check_location in self.tilemap:
                 tiles.append(self.tilemap[check_location])
         return tiles
@@ -70,7 +72,7 @@ class TIlemap:
         self.offgrid_tiles = map_data['offgrid']
     
     def solid_check(self, pos):
-        tile_location = str(int(pos[0] // self.tile_size)) + ';' + str(int(pos[1] // self.tile_size))
+        tile_location = str(int(pos[X] // self.tile_size)) + ';' + str(int(pos[Y] // self.tile_size))
         if tile_location in self.tilemap:
             if self.tilemap[tile_location]['type'] in PHYSICS_TILES:
                 return self.tilemap[tile_location]
@@ -79,7 +81,7 @@ class TIlemap:
         rects = []
         for tile in self.tiles_around(pos):
             if tile['type'] in PHYSICS_TILES:
-                rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
+                rects.append(pygame.Rect(tile['pos'][X] * self.tile_size, tile['pos'][Y] * self.tile_size, self.tile_size, self.tile_size))
         return rects
 
     def autotile(self):
@@ -87,7 +89,7 @@ class TIlemap:
             tile = self.tilemap[location]
             neighbors = set()
             for shift in [(1, 0), (-1, 0), (0, -1), (0, 1)]:
-                check_loc = str(tile['pos'][0] + shift[0]) + ';' + str(tile['pos'][1] + shift[1])
+                check_loc = str(tile['pos'][X] + shift[X]) + ';' + str(tile['pos'][Y] + shift[Y])
                 if check_loc in self.tilemap:
                     if self.tilemap[check_loc]['type'] == tile['type']:
                         neighbors.add(shift)
@@ -99,12 +101,12 @@ class TIlemap:
     # Make rendering optimisations
         # Firstly decoration
         for tile in self. offgrid_tiles:
-            surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] - offset[0], tile['pos'][1] - offset[1]))
+            surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][X] - offset[X], tile['pos'][Y] - offset[Y]))
 
         # Secondary decoration
-        for x in range(offset[0] // self.tile_size, (offset[0] + surface.get_width()) // self.tile_size + 1):
-            for y in range(offset[1] // self.tile_size, (offset[1] + surface.get_height()) // self.tile_size + 1):
+        for x in range(offset[X] // self.tile_size, (offset[X] + surface.get_width()) // self.tile_size + 1):
+            for y in range(offset[Y] // self.tile_size, (offset[Y] + surface.get_height()) // self.tile_size + 1):
                 location = str(x) + ';' + str(y)
                 if location in self.tilemap:
                     tile = self.tilemap[location]
-                    surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))
+                    surface.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][X] * self.tile_size - offset[X], tile['pos'][Y] * self.tile_size - offset[Y]))

@@ -1,5 +1,7 @@
 from random import random, choice
 COUNT_OF_CLOUDS = 16
+X = 0
+Y = 1
 
 class Cloud:
     def __init__(self, pos, img, speed, depth):
@@ -9,11 +11,11 @@ class Cloud:
         self.depth = depth
 
     def update(self):
-        self.pos[0] += self.speed
+        self.pos[X] += self.speed
 
     def render(self, surface, offset = (0, 0)):
-        render_pos = (self.pos[0] - offset[0] * self.depth, self.pos[1] - offset[1] * self.depth)
-        surface.blit(self.img, (render_pos[0] % (surface.get_width() + self.img.get_width()) - self.img.get_width(), render_pos[1] % (surface.get_height() + self.img.get_height()) - self.img.get_height()))
+        render_pos = (self.pos[X] - offset[X] * self.depth, self.pos[Y] - offset[Y] * self.depth)
+        surface.blit(self.img, (render_pos[X] % (surface.get_width() + self.img.get_width()) - self.img.get_width(), render_pos[Y] % (surface.get_height() + self.img.get_height()) - self.img.get_height()))
 
 class Clouds:
     def __init__(self, cloud_images, count = COUNT_OF_CLOUDS):
