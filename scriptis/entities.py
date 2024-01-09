@@ -20,6 +20,8 @@ class PhysicsEntity:
         self.animation_offset = (-3, -3)
         self.flip = False
         self.set_action('idle')
+        self.atack_time = 50
+        self.atack_lenth = 8
         
         self.last_movement = [0, 0]
 
@@ -117,7 +119,7 @@ class Enemy(PhysicsEntity):
         else:
             self.set_action('idle')
             
-        if abs(self.game.player.dashing) >= 50:
+        if abs(self.game.player.atacking) >= self.atack_time:
             if self.rect().colliderect(self.game.player.rect()):
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.game.sfx['hit'].play()
@@ -130,7 +132,7 @@ class Enemy(PhysicsEntity):
                 self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
                 return True
 
-        if abs(self.game.player.mele_atacking) >= 40:
+        if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()):
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.game.sfx['hit'].play()
@@ -158,11 +160,11 @@ class Player(PhysicsEntity):
         self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
-        self.mele_atacking = 0
+        self.atacking = 0
     
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
-        TIME_FLYING_AFTER_THAT_PLAYER_DIE = 130
+        TIME_FLYING_AFTER_THAT_PLAYER_DIE = 135
         self.air_time += 1
         
         if self.air_time > TIME_FLYING_AFTER_THAT_PLAYER_DIE:
@@ -209,23 +211,23 @@ class Player(PhysicsEntity):
             pvelocity = [abs(self.dashing) / self.dashing * random.random() * 3, 0]
             self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
 
-        # Mele atack
-        if abs(self.mele_atacking) in {50, 40}:
+        # Atack particles
+        if abs(self.atacking) in {self.atack_time + 10, self.atack_time}:
             for i in range(20):
                 angle = random.random() * math.pi * 2
                 speed = random.random() * 0.5 + 0.5
-                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed]
-                self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
-        if self.mele_atacking > 0:
-            self.mele_atacking = max(0, self.mele_atacking - 1)
-        if self.mele_atacking < 0:
-            self.mele_atacking = min(0, self.mele_atacking + 1)
-        if abs(self.mele_atacking) > 40:
-            self.velocity[X] = abs(self.mele_atacking) / self.mele_atacking * 8
-            if abs(self.mele_atacking) == 41:
+                particle_velocity = [math.cos(angle) * speed, math.sin(angle) * speed]
+                self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=particle_velocity, frame=random.randint(0, 7)))
+        if self.atacking > 0:
+            self.atacking = max(0, self.atacking - 1)
+        if self.atacking < 0:
+            self.atacking = min(0, self.atacking + 1)
+        if abs(self.atacking) > self.atack_time:
+            self.velocity[X] = abs(self.atacking) / self.atacking * self.atack_lenth
+            if abs(self.atacking) == self.atack_time + 1:
                 self.velocity[X] *= 0.1
-            pvelocity = [abs(self.mele_atacking) / self.mele_atacking * random.random() * 3, 0]
-            self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
+            particle_velocity = [abs(self.atacking) / self.atacking * random.random() * 3, 0]
+            self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=particle_velocity, frame=random.randint(0, 7)))
                 
         if self.velocity[X] > 0:
             self.velocity[X] = max(self.velocity[X] - 0.1, 0)
@@ -233,9 +235,9 @@ class Player(PhysicsEntity):
             self.velocity[X] = min(self.velocity[X] + 0.1, 0)
     
     def render(self, surface, offset=(0, 0)):
-        if abs(self.dashing) <= 50:
+        if abs(self.atacking) <= self.atack_time:
             super().render(surface, offset=offset)
-        if abs(self.mele_atacking) <= 40:
+        if abs(self.dashing) <= 50:
             super().render(surface, offset=offset)
             
     def jump(self):
@@ -270,12 +272,15 @@ class Player(PhysicsEntity):
                 self.dashing = -60
             else:
                 self.dashing = 60
-    def mele_atack(self):
-        if not self.mele_atacking:
+
+    def atack(self):
+        if not self.atacking:
             self.game.sfx['dash'].play()
             if self.flip:
-                self.mele_atacking = -51
+                self.atacking = -(self.atack_time + 3)
             else:
-                self.mele_atacking = 51
+                self.atacking = self.atack_time + 3
+    
+
 
 

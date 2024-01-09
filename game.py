@@ -3,6 +3,7 @@ import os
 import math
 import pygame
 import random
+import time
 # import files
 from scriptis.entities import PhysicsEntity, Player, Enemy
 from scriptis. tilemap import TIlemap, TILE_SIZE
@@ -83,6 +84,8 @@ class Game:
         self.load_level(self.level)
         
         self.screenshake = 0
+        
+        
 
     def load_level(self, map_id):
         self.tilemap.load('data/maps/' + str(map_id) + '.json')
@@ -118,6 +121,10 @@ class Game:
         while True:
             self.display.fill((0, 0, 0, 0))
             # self.display_2.blit(pygame.transform.scale2x(self.assets['background']), (0, 0))
+            # self.display_2.blit(load_image('intro/0.png'), (0, 0))
+            # time.sleep(3)
+            # self.display_2.blit(load_image('intro/1.png'), (0, 0))
+            # time.sleep(3)
             self.display_2.blit(self.assets['background'], (0, 0))
             
             self.screenshake = max(0, self.screenshake - 1)
@@ -178,7 +185,7 @@ class Game:
                         self.sparks.append(Spark(projectile[X], random.random() - 0.5 + (math.pi if projectile[Y] > 0 else 0), 2 + random.random()))
                 elif projectile[2] > 360:
                     self.projectiles.remove(projectile)
-                elif abs(self.player.dashing)< 50:
+                elif abs(self.player.atacking)< 50:
                     if self.player.rect().collidepoint(projectile[X]):
                         self.projectiles.remove(projectile)
                         self.dead += 1
@@ -186,7 +193,7 @@ class Game:
                         self.screenshake = max(16, self.screenshake)
                         for i in range(30):
                             angle = random.random() * math.pi * 2
-                            speed = random.random() * 5
+                            speed = random.random() * 2
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
                             self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                         
@@ -225,9 +232,9 @@ class Game:
                     if event.key == pygame.K_DOWN or event.key == ord('s'):
                         self.player.velocity[Y] = 3
                     if event.key == pygame.K_x:
-                        self.player.mele_atack()
-                    if event.key == pygame.K_SPACE:
                         self.player.dash()
+                    if event.key == pygame.K_SPACE:
+                        self.player.atack()
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == ord('a'):
                         self.movement[X] = False

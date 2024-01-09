@@ -6,6 +6,7 @@ from scriptis.utils import load_image, load_images, Animation
 RENDER_SCALE = 2.0
 X = 0
 Y = 1
+Editing_level = 3
 
 class Editor:
     def __init__(self):
@@ -37,7 +38,7 @@ class Editor:
         self.tilemap = TIlemap(self, TILE_SIZE)
 
         try:
-            self.tilemap.load('data/maps/0.json')
+            self.tilemap.load(f'data/maps/{Editing_level}.json')
         except FileNotFoundError:
             pass
 
@@ -144,7 +145,7 @@ class Editor:
                     if event.key == pygame.K_t:
                         self.tilemap.autotile()
                     if event.key == pygame.K_o:
-                        self.tilemap.save('map.json')
+                        self.tilemap.save(f'data/maps/{Editing_level}.json')
                     if event.key == pygame.K_LSHIFT or event.mod & pygame.KMOD_SHIFT:
                         self.shift = True
                 if event.type == pygame.KEYUP:
