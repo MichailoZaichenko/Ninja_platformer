@@ -231,7 +231,7 @@ class Game:
                             self.sfx['jump'].play()
                     if event.key == pygame.K_DOWN or event.key == ord('s'):
                         self.player.velocity[Y] = 3
-                    if event.key == pygame.K_x:
+                    if event.key == pygame.K_LSHIFT:
                         self.player.dash()
                     if event.key == pygame.K_SPACE:
                         self.player.atack()
